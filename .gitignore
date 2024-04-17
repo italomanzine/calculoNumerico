@@ -1,3 +1,4 @@
 # Ignora a pasta __pycache__ e todos os arquivos .pyc dentro dela
 __pycache__/
 *.pyc
+*.txt
