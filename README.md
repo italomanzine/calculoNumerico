@@ -17,7 +17,7 @@ Siga as etapas abaixo para configurar o ambiente:
 1. Clone este repositório para o seu computador:
 
     ```bash
-    git clone https://github.com/seu-usuario/calculoNumerico.git
+    git clone https://github.com/italomanzine/calculoNumerico.git
     ```
 
 2. Navegue até o diretório do projeto:
