@@ -7,8 +7,10 @@ Este arquivo contém as instruções para configurar o ambiente e executar todos
 Antes de começar, verifique se o seu sistema atende aos seguintes requisitos:
 
 - Sistema operacional: Windows, macOS ou Linux
-- Python 3.x instalado
+- Python 3.x instalado (https://www.python.org/downloads/)
 - Bibliotecas Python: numpy, matplotlib, scipy
+- IDEs: Visual Studio Code (https://code.visualstudio.com/), PyCharm (https://www.jetbrains.com/pycharm/)
+- Plataformas online: Replit (https://replit.com/), Jupyter Notebook (https://jupyter.org/), Google Colab (https://colab.research.google.com/)
 
 ## Instalação
 
@@ -36,10 +38,34 @@ Siga as etapas abaixo para configurar o ambiente:
 
 Agora que o ambiente está configurado, você pode executar os projetos de cálculo numérico. Navegue até o diretório do projeto desejado e siga as instruções fornecidas no respectivo README.
 
-## Contribuição
+Aqui estão alguns exemplos de como executar os projetos:
 
-Se você encontrar algum problema ou tiver sugestões de melhoria, sinta-se à vontade para abrir uma issue ou enviar um pull request.
+- Projeto 1: Método de Newton-Raphson
+    - Navegue até o diretório do projeto:
+        ```bash
+        cd calculoNumerico/MetodoNewtonRaphson
+        ```
+    - Execute o arquivo principal:
+        ```bash
+        python main.py
+        ```
 
-## Licença
+- Projeto 2: Método da Bissecao
+    - Navegue até o diretório do projeto:
+        ```bash
+        cd calculoNumerico/MetodoBissecao
+        ```
+    - Execute o arquivo principal:
+        ```bash
+        python main.py
+        ```
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+- Projeto 3: Conversor Binario
+    - Navegue até o diretório do projeto:
+        ```bash
+        cd calculoNumerico/ConversorBinario
+        ```
+    - Execute o arquivo principal:
+        ```bash
+        python menu.py
+        ```
