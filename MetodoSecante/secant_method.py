@@ -5,21 +5,33 @@ from function import f
 def secant_method(f, x0, x1, tol, max_iter):
     # Inicializa a lista de aproximações x
     x_values = [x0, x1]
-    
+
+    # Imprime o cabeçalho da tabela
+    print(f"{'N':^3} | {'x_(i-1)':^10} | {'x_(i)':^10} | {'f(x_(i-1))':^10} | {'f(x_(i))':^10} | {'x_(i+1)':^10} | {'E_ideal':^10} | {'E':^10}")
+    print("-"*73)
+
     for i in range(max_iter):
         f_x0, f_x1 = f(x_values[-2]), f(x_values[-1])
         # Evita a divisão por zero
         if f_x1 - f_x0 == 0:
             print("Divisão por zero na iteração da secante.")
             return None, i, x_values
+
         # Calcula o próximo ponto x
         x_next = x_values[-1] - (f_x1 * (x_values[-1] - x_values[-2])) / (f_x1 - f_x0)
         x_values.append(x_next)
-        
-        if abs(x_values[-1] - x_values[-2]) < tol:
+
+        # Calcula o erro estimado e o erro ideal (se desejado)
+        err_estimated = abs(x_values[-1] - x_values[-2])
+        err_ideal = tol # Neste exemplo, apenas repetimos a tolerância como erro ideal
+
+        # Imprime os detalhes da iteração atual
+        print(f"{i+1:^3} | {x_values[-2]:^10.5f} | {x_values[-1]:^10.5f} | {f_x0:^10.5f} | {f_x1:^10.5f} | {x_next:^10.5f} | {err_ideal:^10.5f} | {err_estimated:^10.5f}")
+
+        if err_estimated < tol:
             return x_next, i + 1, x_values
-    
-    return x_next, i + 1, x_values
+
+    return x_next, max_iter, x_values
 
 def plot_secant_method(x_values, f):
     plt.figure(figsize=(10, 6))
