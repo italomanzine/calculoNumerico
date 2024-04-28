@@ -103,6 +103,8 @@ def plot_roots(f, roots, start, end):
     # Plota as raízes encontradas
     for root in roots:
         plt.plot(root, f(root), 'ro', label=f'Root at x={root:.4f}')
+        plt.annotate(f'({root:.4f}, {f(root):.4f})', xy=(root, f(root)), xytext=(-20, 20),
+                     textcoords='offset points', arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5'))
     # Configurações do gráfico
     plt.axhline(0, color='black', linewidth=0.5)
     plt.axvline(0, color='black', linewidth=0.5)
@@ -110,5 +112,5 @@ def plot_roots(f, roots, start, end):
     plt.grid(True)
     plt.xlabel('x')
     plt.ylabel('f(x)')
-    plt.title('Graph of f(x) with roots')
+    plt.title('Método da Falsa Posição')
     plt.show()
