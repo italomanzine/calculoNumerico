@@ -1,20 +1,23 @@
-# Arquivo principal para interação do usuário e execução do método de Newton-Raphson.
-
-from newton_raphson import newton_raphson, plot_newton_raphson
-from function import f, df
+import sympy as sp
+from newton_raphson import newton_raphson, plot_newton_raphson, print_table
 
 def main():
-    print("Método de Newton-Raphson para encontrar a raiz da função.")
+    x = sp.symbols('x')  # Cria uma variável simbólica 'x'
+    print("Método de Newton-Raphson para encontrar a raiz de uma função.")
+
+    func_expr = input("Informe a função matemática, usando 'x' como variável (por exemplo: 'x**2 - 3'): ")
+    f = sp.lambdify(x, sp.sympify(func_expr), 'numpy')
+    df = sp.lambdify(x, sp.diff(sp.sympify(func_expr), x), 'numpy')
+
     x0 = float(input("Digite o valor inicial (x0): "))
     tol = float(input("Digite a tolerância desejada (e.g., 0.001): "))
     max_iter = int(input("Digite o número máximo de iterações: "))
-    
-    # Chama o método de Newton-Raphson e obtém a raiz e os valores de x das iterações
-    root, iterations, x_values = newton_raphson(x0, tol, max_iter)
-    if iterations < max_iter:
+
+    root, iterations, x_values, iterations_data = newton_raphson(f, df, x0, tol, max_iter)
+    if root is not None:
         print(f"A raiz aproximada é: {root} encontrada em {iterations} iterações.")
-        # Plota a função e as tangentes das iterações
-        plot_newton_raphson(x_values, f, df)
+        print_table(iterations_data, tol)  # Exibe a tabela de iterações
+        plot_newton_raphson(f, df, x_values)  # Esta função agora é chamada corretamente
     else:
         print("O método não convergiu após o número máximo de iterações.")
 
