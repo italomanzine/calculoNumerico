@@ -1,28 +1,25 @@
-# Importa as funções do arquivo bisection.py
-from bisection import bisection, plot_function
+# Importa as funções necessárias do módulo bisection
+from bisection import bisection, plot_function, print_table
 
 def main():
-    
-    print("Método da Bisseção para encontrar a raiz de uma função.") # Exibe uma mensagem introdutória sobre o programa   
-    a = input("Informe o valor inicial de a: ") # Solicita ao usuário o limite inferior do intervalo de busca da raiz    
-    b = input("Informe o valor inicial de b: ") # Solicita ao usuário o limite superior do intervalo de busca da raiz    
-    tol = input("Informe a tolerância desejada: ") # Solicita ao usuário a tolerância para o critério de parada do método
+    # Interação inicial com o usuário para receber a função matemática e os parâmetros de execução
+    print("Método da Bisseção para encontrar a raiz de uma função.")
+    func_expr = input("Informe a função matemática, usando 'x' como variável (por exemplo: 'x**2 - 3'): ")
+    a = float(input("Informe o valor inicial de a: ").replace(',', '.'))
+    b = float(input("Informe o valor inicial de b: ").replace(',', '.'))
+    tol = float(input("Informe a tolerância desejada: ").replace(',', '.'))
 
-    # Converte as entradas para números de ponto flutuante, substituindo vírgula por ponto
-    a = float(a.replace(',', '.'))
-    b = float(b.replace(',', '.'))
-    tol = float(tol.replace(',', '.'))
+    # Executa o algoritmo da bisseção com os parâmetros fornecidos e recebe a raiz e os dados das iterações
+    root, iterations_data = bisection(a, b, tol, func_expr)
 
-    # Chama a função de bisseção e armazena a raiz encontrada e os pontos médios
-    root, middle_points = bisection(a, b, tol)
-    if root is not None:  # Se uma raiz foi encontrada        
-        print(f"A raiz aproximada é: {root}")# Exibe a raiz aproximada e os pontos médios
-        print(f"Pontos médios durante a bisseção: {middle_points}")
-        # Plota a função e o ponto de bisseção
-        plot_function(a, b, root, tol)
-    else:  # Se não foi possível encontrar a raiz
+    # Se uma raiz foi encontrada, exibe os resultados e plota o gráfico
+    if root is not None:
+        print(f"A raiz aproximada é: {root}")
+        print_table(iterations_data, tol)
+        plot_function(a, b, root, tol, func_expr)
+    else:
         print("Não foi possível encontrar a raiz com os valores fornecidos.")
 
-# Verifica se este script é o principal e chama a função main
+# Verifica se este script está sendo executado como principal e chama a função main
 if __name__ == "__main__":
     main()

@@ -1,51 +1,78 @@
-# Importação da função que vamos encontrar a raiz e bibliotecas necessárias para a plotagem
-from function import f
-import matplotlib.pyplot as plt
 import numpy as np
+import matplotlib.pyplot as plt
 
-# Função para plotar a função e a raiz aproximada
-def plot_function(a, b, root, tol):
+def safe_eval(expr, **kwargs):
+    # Avalia expressões matemáticas de forma segura, utilizando uma lista de nomes permitidos
+    allowed_names = {'x': kwargs.get('x', 0), 'np': np}
+    code = compile(expr, "<string>", "eval")
+    for name in code.co_names:
+        if name not in allowed_names:
+            raise NameError(f"Uso de nome não permitido: {name}")
+    return eval(code, {"__builtins__": {}}, allowed_names)
+
+def plot_function(a, b, root, tol, expr):
+    # Gera pontos para o gráfico da função e plota a linha y=0
+    x = np.linspace(a - 1, b + 1, 400)
+    y = [safe_eval(expr, x=xi) for xi in x]
+    plt.axhline(0, color='black', lw=2)
+    plt.plot(x, y, label='f(x)')
     
-    x = np.linspace(a - 1, b + 1, 400) # Gera uma série de pontos entre a e b para o traçado do gráfico da função    
-    y = f(x) # Calcula os valores correspondentes de f(x) para esses pontos    
-    plt.axhline(0, color='black', lw=2) # Plota uma linha horizontal no eixo das ordenadas (y=0)    
-    plt.plot(x, y, label='f(x)') # Plota o gráfico da função f(x)        
-    plt.plot(root, f(root), 'ro', label='Raiz aproximada') # Marca o ponto da raiz aproximada encontrada no gráfico
-    
-    # Define as etiquetas dos eixos e o título do gráfico
+    # Plota e anota a raiz no gráfico
+    root_value = safe_eval(expr, x=root)
+    plt.plot(root, root_value, 'ro', label=f'Root at x={root:.4f}')
+    plt.annotate(f'({root:.4f}, {root_value:.4f})', xy=(root, root_value), xytext=(-20, 20),
+                 textcoords='offset points', arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0.5'))
+
+    # Configurações adicionais e exibição do gráfico
     plt.xlabel('x')
     plt.ylabel('f(x)')
     plt.title('Gráfico de f(x)')
-    
-    plt.legend() # Adiciona uma legenda ao gráfico    
-    plt.grid(True) # Adiciona uma grade ao gráfico para facilitar a leitura    
-    plt.show() # Exibe o gráfico
+    plt.legend()
+    plt.grid(True)
+    plt.show()
 
-# Função que implementa o método da bisseção
-def bisection(a, b, tol):
-    # Verifica se os valores iniciais satisfazem a condição do teorema do valor intermediário
-    if f(a) * f(b) >= 0:
-        # Se não satisfazem, imprime uma mensagem de erro e retorna valores nulos
-        print("A bisseção requer que f(a) e f(b) tenham sinais opostos.")
-        return None, None
+ # Imprime uma tabela com os dados das iterações do método da bisseção
+def print_table(iterations_data, tol):
+    headers = ["N", "A", "B", "x_ns", "f(x_ns)", "f(A)", "f(B)", "f(A)*f(x_ns)", "[A, x_ns]", "[x_ns, B]", "e_ideal", "e"]
+    print("{:<4} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12} {:<12}".format(*headers))
+    for i, data in enumerate(iterations_data):
+        a, b, x, f_x, f_a, f_b = data['a'], data['b'], data['x'], data['f(x)'], data['f(a)'], data['f(b)']
+        e_ideal = tol
+        e = abs(b - a) / 2
+        f_a_x = f_a * f_x if f_a is not None and f_x is not None else None
+        interval_a_x = f"[{a:.6f}, {x:.6f}]" if a is not None and x is not None else ''
+        interval_x_b = f"[{x:.6f}, {b:.6f}]" if x is not None and b is not None else ''
+        print(f"{i+1:<4} {a:<12.6f} {b:<12.6f} {x:<12.6f} {f_x:<12.6e} {f_a:<12.6e} {f_b:<12.6e} {f_a_x:<12.6e} {interval_a_x:<12} {interval_x_b:<12} {e_ideal:<12.6f} {e:<12.6f}")
 
-    
-    middle = a # Inicializa a variável para armazenar o ponto médio do intervalo    
-    middle_points = [] # Lista para armazenar todos os pontos médios calculados durante o método
+def bisection(a, b, tol, expr):
+    # Implementa o método da bisseção para encontrar a raiz de uma função em um intervalo [a, b]
+    # Verifica inicialmente se a função muda de sinal entre a e b
+    if safe_eval(expr, x=a) * safe_eval(expr, x=b) > 0:
+        print("A função deve ter sinais opostos em a e b para o método funcionar.")
+        return None, []
 
-    # Enquanto a diferença entre b e a for maior que a tolerância especificada, continua o método
+    iterations_data = []
     while (b - a) / 2.0 > tol:
-        
-        middle = (a + b) / 2.0 # Atualiza o ponto médio        
-        middle_points.append(middle) # Adiciona o ponto médio atual à lista de pontos médios
-        
-        # Verifica se encontramos a raiz exata ou se devemos ajustar os limites do intervalo
-        if f(middle) == 0:  # Se f(middle) é zero, encontramos a raiz exata
-            return middle, middle_points
-        elif f(a) * f(middle) < 0:  # Se f(a) e f(middle) têm sinais opostos, a raiz está entre a e middle
-            b = middle
-        else:  # Se f(middle) e f(b) têm sinais opostos, a raiz está entre middle e b
-            a = middle
+        # Encontra o ponto médio e avalia a função nesse ponto
+        x_ns = (a + b) / 2.0
+        f_x_ns = safe_eval(expr, x=x_ns)
+        f_a = safe_eval(expr, x=a)
+        f_b = safe_eval(expr, x=b)
 
-    # Retorna o ponto médio final como a raiz aproximada e a lista de todos os pontos médios calculados
-    return (a + b) / 2.0, middle_points
+        # Registra os dados da iteração
+        iterations_data.append({'a': a, 'b': b, 'x': x_ns, 'f(x)': f_x_ns, 'f(a)': f_a, 'f(b)': f_b})
+
+        # Determina o novo intervalo para a próxima iteração
+        if f_a * f_x_ns < 0:
+            b = x_ns
+        elif f_x_ns * f_b < 0:
+            a = x_ns
+        else:
+            # Se a função é suficientemente próxima de zero, para o loop
+            if abs(f_x_ns) < tol:
+                break
+            else:
+                raise ValueError("O método da bisseção falhou.")
+
+    # Retorna a raiz encontrada e os dados das iterações
+    return (a + b) / 2.0, iterations_data
