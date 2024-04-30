@@ -40,9 +40,9 @@ def print_table(iterations_data, tol):
         e_ideal = tol
         e = abs(b - a) / 2
         f_a_x = f_a * f_x if f_a is not None and f_x is not None else None
-        interval_a_x = f"[{a:.6f}, {x:.6f}]" if a is not None and x is not None else ''
-        interval_x_b = f"[{x:.6f}, {b:.6f}]" if x is not None and b is not None else ''
-        print(f"{i+1:<4} {a:<12.6f} {b:<12.6f} {x:<12.6f} {f_x:<12.6e} {f_a:<12.6e} {f_b:<12.6e} {f_a_x:<12.6e} {interval_a_x:<12} {interval_x_b:<12} {e_ideal:<12.6f} {e:<12.6f}")
+        interval_a_x = f"[{a:.4f}, {x:.4f}]" if a is not None and x is not None else ''
+        interval_x_b = f"[{x:.4f}, {b:.4f}]" if x is not None and b is not None else ''
+        print(f"{i+1:<4} {a:<12.4f} {b:<12.4f} {x:<12.4f} {f_x:<12.4e} {f_a:<12.4e} {f_b:<12.4e} {f_a_x:<12.4e} {interval_a_x:<12} {interval_x_b:<12} {e_ideal:<12.4f} {e:<12.4f}")
 
 def bisection(a, b, tol, expr):
     # Implementa o método da bisseção para encontrar a raiz de uma função em um intervalo [a, b]
