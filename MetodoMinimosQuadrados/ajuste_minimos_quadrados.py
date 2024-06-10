@@ -73,6 +73,49 @@ def calculate_linear_regression_details(points):
 
     return a0, a1
 
+def calculate_quadratic_regression_details(points):
+    """
+    Calcula os detalhes da regressão quadrática incluindo somatórios, sistema e resíduos.
+    """
+    X = np.array([x for x, y in points])
+    Y = np.array([y for x, y in points])
+
+    n = len(X)
+    sum_x = np.sum(X)
+    sum_y = np.sum(Y)
+    sum_x2 = np.sum(X**2)
+    sum_x3 = np.sum(X**3)
+    sum_x4 = np.sum(X**4)
+    sum_xy = np.sum(X * Y)
+    sum_x2y = np.sum(X**2 * Y)
+
+    # Resolução do sistema quadrático para encontrar coeficientes
+    A = np.array([
+        [n, sum_x, sum_x2],
+        [sum_x, sum_x2, sum_x3],
+        [sum_x2, sum_x3, sum_x4]
+    ])
+    b = np.array([sum_y, sum_xy, sum_x2y])
+    coefficients = np.linalg.solve(A, b)
+    a0, a1, a2 = coefficients
+
+    # Cálculo dos resíduos
+    Y_pred = a0 + a1 * X + a2 * X**2
+    residuals = Y - Y_pred
+    sum_squared_residuals = np.sum(residuals**2)
+
+    # Exibir detalhes
+    print("a) Cálculo dos somatórios:")
+    print(f"Sum xi = {sum_x}, Sum yi = {sum_y}, Sum xi^2 = {sum_x2}, Sum xi^3 = {sum_x3}, Sum xi^4 = {sum_x4}")
+    print(f"Sum xi*yi = {sum_xy}, Sum xi^2*yi = {sum_x2y}")
+    print("b) Resolução do sistema:")
+    print(f"Sistema quadrático: [{n}, {sum_x}, {sum_x2}; {sum_x}, {sum_x2}, {sum_x3}; {sum_x2}, {sum_x3}, {sum_x4}] * [a0; a1; a2] = [{sum_y}; {sum_xy}; {sum_x2y}]")
+    print(f"Coeficientes: a0 = {a0:.4f}, a1 = {a1:.4f}, a2 = {a2:.4f}")
+    print("c) Cálculo dos quadrados dos resíduos:")
+    print(f"Resíduos quadrados: {sum_squared_residuals:.4f}")
+
+    return a0, a1, a2
+
 def main():
     """
     Menu principal para interação do usuário com o programa.
@@ -83,7 +126,8 @@ def main():
         print("1. Inserir os dados para os pontos")
         print("2. Visualizar os pontos atuais")
         print("3. Executar o ajuste linear pelo método dos mínimos quadrados")
-        print("4. Sair do programa")
+        print("4. Executar o ajuste polinomial (quadrático) pelo método dos mínimos quadrados")
+        print("5. Sair do programa")
         choice = input("Escolha uma opção: ")
         
         if choice == '1':
@@ -97,6 +141,12 @@ def main():
                 a0, a1 = calculate_linear_regression_details(points)
                 print(f"A equação da reta ajustada é y = {a0:.4f} + {a1:.4f}x")
         elif choice == '4':
+            if len(points) < 3:
+                print("É necessário pelo menos três pontos para realizar o ajuste quadrático.")
+            else:
+                a0, a1, a2 = calculate_quadratic_regression_details(points)
+                print(f"A equação do polinômio ajustado é y = {a0:.4f} + {a1:.4f}x + {a2:.4f}x^2")
+        elif choice == '5':
             print("Saindo do programa.")
             break
         else:
