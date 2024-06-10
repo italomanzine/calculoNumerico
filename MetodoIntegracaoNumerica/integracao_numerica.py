@@ -1,4 +1,5 @@
 import numpy as np
+import sympy as sp
 
 def input_interval_and_subintervals():
     """
@@ -32,23 +33,30 @@ def input_interval_and_subintervals():
 
     return a, b, n
 
-def function_to_integrate(x):
+def input_function():
     """
-    Define a função que será integrada.
+    Solicita ao usuário a função que deve ser integrada.
     
-    Args:
-        x (float): Ponto em que a função será avaliada.
-        
     Returns:
-        float: Valor da função no ponto x.
+        func (function): Função que será integrada.
     """
-    return np.exp(x)  # Exemplo de função: f(x) = e^x
+    x = sp.symbols('x')
+    while True:
+        try:
+            func_str = input("Digite a função a ser integrada em termos de x (por exemplo, exp(x)): ")
+            func_sympy = sp.sympify(func_str)
+            func = sp.lambdify(x, func_sympy, modules='numpy')
+            break
+        except (sp.SympifyError, ValueError):
+            print("Entrada inválida. Por favor, insira uma função válida em termos de x.")
+    return func
 
-def rectangle_rule(a, b, n):
+def rectangle_rule(f, a, b, n):
     """
     Calcula a integral pelo método dos retângulos.
     
     Args:
+        f (function): Função a ser integrada.
         a (float): Limite inferior do intervalo.
         b (float): Limite superior do intervalo.
         n (int): Número de subintervalos.
@@ -60,14 +68,15 @@ def rectangle_rule(a, b, n):
     integral = 0
     for i in range(n):
         xi = a + i * h
-        integral += function_to_integrate((xi + xi + h) / 2) * h  # Usando ponto médio
+        integral += f((xi + xi + h) / 2) * h  # Usando ponto médio
     return integral
 
-def trapezoid_rule(a, b, n):
+def trapezoid_rule(f, a, b, n):
     """
     Calcula a integral pelo método dos trapézios.
     
     Args:
+        f (function): Função a ser integrada.
         a (float): Limite inferior do intervalo.
         b (float): Limite superior do intervalo.
         n (int): Número de subintervalos.
@@ -76,18 +85,19 @@ def trapezoid_rule(a, b, n):
         float: Valor aproximado da integral.
     """
     h = (b - a) / n
-    integral = (function_to_integrate(a) + function_to_integrate(b)) / 2
+    integral = (f(a) + f(b)) / 2
     for i in range(1, n):
         xi = a + i * h
-        integral += function_to_integrate(xi)
+        integral += f(xi)
     integral *= h
     return integral
 
-def simpson_rule(a, b, n):
+def simpson_rule(f, a, b, n):
     """
     Calcula a integral pelo método de Simpson.
     
     Args:
+        f (function): Função a ser integrada.
         a (float): Limite inferior do intervalo.
         b (float): Limite superior do intervalo.
         n (int): Número de subintervalos (deve ser par).
@@ -99,13 +109,13 @@ def simpson_rule(a, b, n):
         raise ValueError("O número de subintervalos deve ser par para a regra de Simpson.")
     
     h = (b - a) / n
-    integral = function_to_integrate(a) + function_to_integrate(b)
+    integral = f(a) + f(b)
     for i in range(1, n):
         xi = a + i * h
         if i % 2 == 0:
-            integral += 2 * function_to_integrate(xi)
+            integral += 2 * f(xi)
         else:
-            integral += 4 * function_to_integrate(xi)
+            integral += 4 * f(xi)
     integral *= h / 3
     return integral
 
@@ -114,40 +124,44 @@ def main():
     Menu principal para interação do usuário com o programa.
     """
     a = b = n = None
+    f = None
     
     while True:
         print("\nMenu:")
         print("1. Inserir os dados do intervalo e o número de subintervalos")
-        print("2. Executar a integração pela Regra dos Retângulos")
-        print("3. Executar a integração pela Regra dos Trapézios")
-        print("4. Executar a integração pela Regra de Simpson")
-        print("5. Sair do programa")
+        print("2. Inserir a função a ser integrada")
+        print("3. Executar a integração pela Regra dos Retângulos")
+        print("4. Executar a integração pela Regra dos Trapézios")
+        print("5. Executar a integração pela Regra de Simpson")
+        print("6. Sair do programa")
         choice = input("Escolha uma opção: ")
         
         if choice == '1':
             a, b, n = input_interval_and_subintervals()
         elif choice == '2':
-            if a is None or b is None or n is None:
-                print("Por favor, insira os dados do intervalo e o número de subintervalos primeiro.")
-            else:
-                result = rectangle_rule(a, b, n)
-                print(f"Resultado da integração pela Regra dos Retângulos: {result:.4f}")
+            f = input_function()
         elif choice == '3':
-            if a is None or b is None or n is None:
-                print("Por favor, insira os dados do intervalo e o número de subintervalos primeiro.")
+            if a is None or b is None or n is None or f is None:
+                print("Por favor, insira os dados do intervalo, o número de subintervalos e a função primeiro.")
             else:
-                result = trapezoid_rule(a, b, n)
-                print(f"Resultado da integração pela Regra dos Trapézios: {result:.4f}")
+                result = rectangle_rule(f, a, b, n)
+                print(f"Resultado da integração pela Regra dos Retângulos: {result:.4f}")
         elif choice == '4':
-            if a is None or b is None or n is None:
-                print("Por favor, insira os dados do intervalo e o número de subintervalos primeiro.")
+            if a is None or b is None or n is None or f is None:
+                print("Por favor, insira os dados do intervalo, o número de subintervalos e a função primeiro.")
+            else:
+                result = trapezoid_rule(f, a, b, n)
+                print(f"Resultado da integração pela Regra dos Trapézios: {result:.4f}")
+        elif choice == '5':
+            if a is None or b is None or n is None or f is None:
+                print("Por favor, insira os dados do intervalo, o número de subintervalos e a função primeiro.")
             else:
                 try:
-                    result = simpson_rule(a, b, n)
+                    result = simpson_rule(f, a, b, n)
                     print(f"Resultado da integração pela Regra de Simpson: {result:.4f}")
                 except ValueError as e:
                     print(e)
-        elif choice == '5':
+        elif choice == '6':
             print("Saindo do programa.")
             break
         else:
