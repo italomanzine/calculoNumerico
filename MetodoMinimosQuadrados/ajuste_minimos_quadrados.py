@@ -1,5 +1,4 @@
 import numpy as np
-from scipy.stats import linregress
 
 def input_points():
     """
@@ -35,24 +34,44 @@ def display_points(points):
     Útil para verificar visualmente os dados antes de realizar cálculos.
     """
     print("Pontos atuais:")
-    print("| i | xi     | f(xi)   |")
+    print("| i | xi     | f(xi)  |")
     for i, (x, y) in enumerate(points):
         print(f"| {i+1} | {x:.4f} | {y:.4f} |")
 
-def linear_least_squares(points):
+def calculate_linear_regression_details(points):
     """
-    Separa os valores de x e y dos pontos e calcula os coeficientes da reta de melhor ajuste usando o método dos mínimos quadrados.
+    Calcula os detalhes da regressão linear incluindo somatórios, sistema e resíduos.
     """
     X = np.array([x for x, y in points])
-    Y = np.array([y for x, y in points])  # Corrigido para garantir que Y é unidimensional
-    try:
-        slope, intercept, r_value, p_value, std_err = linregress(X, Y)
-        return intercept, slope
-    except Exception as e:
-        print(f"Erro ao executar o ajuste linear: {e}")
-        print(f"X: {X}")
-        print(f"Y: {Y}")
-        return None, None
+    Y = np.array([y for x, y in points])
+
+    n = len(X)
+    sum_x = np.sum(X)
+    sum_y = np.sum(Y)
+    sum_x2 = np.sum(X**2)
+    sum_xy = np.sum(X * Y)
+
+    # Resolução do sistema linear para encontrar coeficientes
+    A = np.array([[n, sum_x], [sum_x, sum_x2]])
+    b = np.array([sum_y, sum_xy])
+    coefficients = np.linalg.solve(A, b)
+    a0, a1 = coefficients
+
+    # Cálculo dos resíduos
+    Y_pred = a0 + a1 * X
+    residuals = Y - Y_pred
+    sum_squared_residuals = np.sum(residuals**2)
+
+    # Exibir detalhes
+    print("a) Cálculo dos somatórios:")
+    print(f"Sum xi = {sum_x}, Sum yi = {sum_y}, Sum xi^2 = {sum_x2}, Sum xi*yi = {sum_xy}")
+    print("b) Resolução do sistema:")
+    print(f"Sistema linear: [{n}, {sum_x}; {sum_x}, {sum_x2}] * [a0; a1] = [{sum_y}; {sum_xy}]")
+    print(f"Coeficientes: a0 = {a0:.4f}, a1 = {a1:.4f}")
+    print("c) Cálculo dos quadrados dos resíduos:")
+    print(f"Resíduos quadrados: {sum_squared_residuals:.4f}")
+
+    return a0, a1
 
 def main():
     """
@@ -75,11 +94,8 @@ def main():
             if len(points) < 2:
                 print("É necessário pelo menos dois pontos para realizar o ajuste linear.")
             else:
-                intercept, slope = linear_least_squares(points)
-                if intercept is not None and slope is not None:
-                    print(f"A equação da reta ajustada é y = {intercept:.4f} + {slope:.4f}x")
-                else:
-                    print("Não foi possível calcular o ajuste linear.")
+                a0, a1 = calculate_linear_regression_details(points)
+                print(f"A equação da reta ajustada é y = {a0:.4f} + {a1:.4f}x")
         elif choice == '4':
             print("Saindo do programa.")
             break
