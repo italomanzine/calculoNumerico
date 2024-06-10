@@ -64,9 +64,11 @@ def calculate_linear_regression_details(points):
 
     # Exibir detalhes
     print("a) Cálculo dos somatórios:")
-    print(f"Sum xi = {sum_x}, Sum yi = {sum_y}, Sum xi^2 = {sum_x2}, Sum xi*yi = {sum_xy}")
+    print(f"Somatória xi = {sum_x}, Somatória xi^2 = {sum_x2}, Somatória yi = {sum_y}, Somatória xi*yi = {sum_xy}")
     print("b) Resolução do sistema:")
-    print(f"Sistema linear: [{n}, {sum_x}; {sum_x}, {sum_x2}] * [a0; a1] = [{sum_y}; {sum_xy}]")
+    print("Sistema linear:")
+    print(f"| {n:.4f} {sum_x:.4f} | | a0 |   = | {sum_y:.4f}  |")
+    print(f"| {sum_x:.4f} {sum_x2:.4f} | | a1 |   = | {sum_xy:.4f} |")
     print(f"Coeficientes: a0 = {a0:.4f}, a1 = {a1:.4f}")
     print("c) Cálculo dos quadrados dos resíduos:")
     print(f"Resíduos quadrados: {sum_squared_residuals:.4f}")
@@ -106,10 +108,13 @@ def calculate_quadratic_regression_details(points):
 
     # Exibir detalhes
     print("a) Cálculo dos somatórios:")
-    print(f"Sum xi = {sum_x}, Sum yi = {sum_y}, Sum xi^2 = {sum_x2}, Sum xi^3 = {sum_x3}, Sum xi^4 = {sum_x4}")
-    print(f"Sum xi*yi = {sum_xy}, Sum xi^2*yi = {sum_x2y}")
+    print(f"Somatória xi = {sum_x}, Somatória xi^2 = {sum_x2}, Somatória xi^3 = {sum_x3}, Somatória xi^4 = {sum_x4}, Somatória f(xi) = {sum_y}")
+    print(f"Somatória xi*yi = {sum_xy}, Somatória xi^2*yi = {sum_x2y}")
     print("b) Resolução do sistema:")
-    print(f"Sistema quadrático: [{n}, {sum_x}, {sum_x2}; {sum_x}, {sum_x2}, {sum_x3}; {sum_x2}, {sum_x3}, {sum_x4}] * [a0; a1; a2] = [{sum_y}; {sum_xy}; {sum_x2y}]")
+    print("Sistema quadrático:")
+    print(f"| {n:.4f} {sum_x:.4f} {sum_x2:.4f} | | a0 |   = | {sum_y:.4f}  |")
+    print(f"| {sum_x:.4f} {sum_x2:.4f} {sum_x3:.4f} | | a1 |   = | {sum_xy:.4f} |")
+    print(f"| {sum_x2:.4f} {sum_x3:.4f} {sum_x4:.4f} | | a2 |   = | {sum_x2y:.4f} |")
     print(f"Coeficientes: a0 = {a0:.4f}, a1 = {a1:.4f}, a2 = {a2:.4f}")
     print("c) Cálculo dos quadrados dos resíduos:")
     print(f"Resíduos quadrados: {sum_squared_residuals:.4f}")
