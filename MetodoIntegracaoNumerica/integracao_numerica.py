@@ -53,7 +53,7 @@ def input_function():
 
 def rectangle_rule(f, a, b, n):
     """
-    Calcula a integral pelo método dos retângulos.
+    Calcula a integral pelo método dos retângulos e exibe informações detalhadas.
     
     Args:
         f (function): Função a ser integrada.
@@ -66,14 +66,21 @@ def rectangle_rule(f, a, b, n):
     """
     h = (b - a) / n
     integral = 0
+    print("c) Iterações:")
+    print("| i | xi     | f(xi)  |")
     for i in range(n):
         xi = a + i * h
-        integral += f((xi + xi + h) / 2) * h  # Usando ponto médio
+        f_xi = f((xi + xi + h) / 2)  # Usando ponto médio
+        integral += f_xi * h
+        print(f"| {i} | {(xi + xi + h) / 2:.4f} | {f_xi:.4f} |")
+    
+    print(f"Soma f(xi): {integral / h:.4f}")
+    print(f"R({h}) = {integral:.4f}")
     return integral
 
 def trapezoid_rule(f, a, b, n):
     """
-    Calcula a integral pelo método dos trapézios.
+    Calcula a integral pelo método dos trapézios e exibe informações detalhadas.
     
     Args:
         f (function): Função a ser integrada.
@@ -86,15 +93,24 @@ def trapezoid_rule(f, a, b, n):
     """
     h = (b - a) / n
     integral = (f(a) + f(b)) / 2
+    print("c) Iterações:")
+    print("| i | xi     | f(xi)  |")
+    print(f"| 0 | {a:.4f} | {f(a):.4f} |")
     for i in range(1, n):
         xi = a + i * h
-        integral += f(xi)
+        f_xi = f(xi)
+        integral += f_xi
+        print(f"| {i} | {xi:.4f} | {f_xi:.4f} |")
+    print(f"| {n} | {b:.4f} | {f(b):.4f} |")
+    
     integral *= h
+    print(f"Soma f(xi): {integral / h:.4f}")
+    print(f"R({h}) = {integral:.4f}")
     return integral
 
 def simpson_rule(f, a, b, n):
     """
-    Calcula a integral pelo método de Simpson.
+    Calcula a integral pelo método de Simpson e exibe informações detalhadas.
     
     Args:
         f (function): Função a ser integrada.
@@ -110,13 +126,22 @@ def simpson_rule(f, a, b, n):
     
     h = (b - a) / n
     integral = f(a) + f(b)
+    print("c) Iterações:")
+    print("| i | xi     | f(xi)  |")
+    print(f"| 0 | {a:.4f} | {f(a):.4f} |")
     for i in range(1, n):
         xi = a + i * h
+        f_xi = f(xi)
         if i % 2 == 0:
-            integral += 2 * f(xi)
+            integral += 2 * f_xi
         else:
-            integral += 4 * f(xi)
+            integral += 4 * f_xi
+        print(f"| {i} | {xi:.4f} | {f_xi:.4f} |")
+    print(f"| {n} | {b:.4f} | {f(b):.4f} |")
+    
     integral *= h / 3
+    print(f"Soma f(xi): {integral / (h / 3):.4f}")
+    print(f"R({h}) = {integral:.4f}")
     return integral
 
 def main():
@@ -144,12 +169,18 @@ def main():
             if a is None or b is None or n is None or f is None:
                 print("Por favor, insira os dados do intervalo, o número de subintervalos e a função primeiro.")
             else:
+                print(f"a) Número de intervalos:\nn = {n}")
+                h = (b - a) / n
+                print(f"b) Tamanho do intervalo:\nh = (b - a)/n = ({b} - {a})/{n} = {h}")
                 result = rectangle_rule(f, a, b, n)
                 print(f"Resultado da integração pela Regra dos Retângulos: {result:.4f}")
         elif choice == '4':
             if a is None or b is None or n is None or f is None:
                 print("Por favor, insira os dados do intervalo, o número de subintervalos e a função primeiro.")
             else:
+                print(f"a) Número de intervalos:\nn = {n}")
+                h = (b - a) / n
+                print(f"b) Tamanho do intervalo:\nh = (b - a)/n = ({b} - {a})/{n} = {h}")
                 result = trapezoid_rule(f, a, b, n)
                 print(f"Resultado da integração pela Regra dos Trapézios: {result:.4f}")
         elif choice == '5':
@@ -157,6 +188,9 @@ def main():
                 print("Por favor, insira os dados do intervalo, o número de subintervalos e a função primeiro.")
             else:
                 try:
+                    print(f"a) Número de intervalos:\nn = {n}")
+                    h = (b - a) / n
+                    print(f"b) Tamanho do intervalo:\nh = (b - a)/n = ({b} - {a})/{n} = {h}")
                     result = simpson_rule(f, a, b, n)
                     print(f"Resultado da integração pela Regra de Simpson: {result:.4f}")
                 except ValueError as e:
