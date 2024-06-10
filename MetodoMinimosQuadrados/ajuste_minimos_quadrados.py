@@ -27,7 +27,7 @@ def input_points():
 
 def display_points(points):
     """
-    Exibe os pontos atuais inseridos pelo usuário.
+    Exibe os pontos atuais inseridos pelo usuário em formato de tabela.
     
     Args:
         points (list of tuples): Lista de pontos (x, y).
@@ -37,8 +37,10 @@ def display_points(points):
         return
     
     print("Pontos atuais:")
+    print("| i | xi  | f(xi) |")
+    print("|---|-----|-------|")
     for i, (x, y) in enumerate(points):
-        print(f"Ponto {i+1}: x = {x}, y = {y}")
+        print(f"| {i+1} | {x:.4f} | {y:.4f} |")
 
 def linear_least_squares(points):
     """
@@ -54,10 +56,15 @@ def linear_least_squares(points):
     X = np.array([x for x, y in points])
     Y = np.array([y for y in points])
     
-    A = np.vstack([np.ones(m), X]).T
-    a1, a2 = np.linalg.lstsq(A, Y, rcond=None)[0]
+    sum_x = np.sum(X)
+    sum_x2 = np.sum(X**2)
+    sum_y = np.sum(Y)
+    sum_xy = np.sum(X * Y)
     
-    return a1, a2
+    a2 = (m * sum_xy - sum_x * sum_y) / (m * sum_x2 - sum_x**2)
+    a1 = (sum_y - a2 * sum_x) / m
+    
+    return a1, a2, sum_x, sum_x2, sum_y, sum_xy
 
 def quadratic_least_squares(points):
     """
@@ -78,30 +85,9 @@ def quadratic_least_squares(points):
     
     return a0, a1, a2
 
-def calculate_adjusted_value(a, x, degree):
+def calculate_residuals(points, a, degree):
     """
-    Calcula o valor ajustado para um valor específico de x.
-    
-    Args:
-        a (tuple): Coeficientes da função ajustada.
-        x (float): Valor de x para o qual se deseja calcular o valor ajustado.
-        degree (int): Grau do polinômio ajustado (1 para linear, 2 para quadrático).
-        
-    Returns:
-        float: Valor ajustado.
-    """
-    if degree == 1:
-        a1, a2 = a
-        return a1 + a2 * x
-    elif degree == 2:
-        a0, a1, a2 = a
-        return a0 + a1 * x + a2 * x**2
-    else:
-        raise ValueError("Grau do polinômio não suportado.")
-
-def calculate_residual_sum_of_squares(points, a, degree):
-    """
-    Calcula a soma dos quadrados dos resíduos.
+    Calcula os resíduos e a soma dos quadrados dos resíduos.
     
     Args:
         points (list of tuples): Lista de pontos (x, y).
@@ -109,14 +95,96 @@ def calculate_residual_sum_of_squares(points, a, degree):
         degree (int): Grau do polinômio ajustado (1 para linear, 2 para quadrático).
         
     Returns:
-        float: Soma dos quadrados dos resíduos.
+        tuple: Lista de resíduos e soma dos quadrados dos resíduos.
     """
-    residuals = 0.0
-    for x, y in points:
-        y_adjusted = calculate_adjusted_value(a, x, degree)
-        residuals += (y - y_adjusted) ** 2
+    residuals = []
+    sum_squared_residuals = 0.0
     
-    return residuals
+    for x, y in points:
+        if degree == 1:
+            y_adjusted = a[0] + a[1] * x
+        elif degree == 2:
+            y_adjusted = a[0] + a[1] * x + a[2] * x**2
+        
+        residual = y - y_adjusted
+        residuals.append((x, y, y_adjusted, residual, residual**2))
+        sum_squared_residuals += residual**2
+    
+    return residuals, sum_squared_residuals
+
+def generate_latex_report(points, linear_results, quadratic_results):
+    """
+    Gera um relatório em formato LaTeX com os resultados dos ajustes.
+    
+    Args:
+        points (list of tuples): Lista de pontos (x, y).
+        linear_results (tuple): Resultados do ajuste linear.
+        quadratic_results (tuple): Resultados do ajuste quadrático.
+    """
+    with open("relatorio_minimos_quadrados.tex", "w") as f:
+        f.write(r"\documentclass{article}" + "\n")
+        f.write(r"\usepackage{amsmath}" + "\n")
+        f.write(r"\begin{document}" + "\n")
+        f.write(r"\title{Relatório de Ajuste pelo Método dos Mínimos Quadrados}" + "\n")
+        f.write(r"\maketitle" + "\n")
+        
+        f.write(r"\section*{Pontos Tabelados}" + "\n")
+        f.write(r"\begin{tabular}{|c|c|c|}\hline" + "\n")
+        f.write(r"i & $x_i$ & $f(x_i)$ \\\hline" + "\n")
+        for i, (x, y) in enumerate(points):
+            f.write(f"{i+1} & {x:.4f} & {y:.4f} \\\hline\n")
+        f.write(r"\end{tabular}" + "\n")
+        
+        f.write(r"\section*{Ajuste Linear}" + "\n")
+        a1, a2, sum_x, sum_x2, sum_y, sum_xy = linear_results
+        f.write(r"\subsection*{Cálculo dos Somatórios}" + "\n")
+        f.write(r"\begin{align*}" + "\n")
+        f.write(r"\sum x_i &= " + f"{sum_x:.4f} \\\\\n")
+        f.write(r"\sum x_i^2 &= " + f"{sum_x2:.4f} \\\\\n")
+        f.write(r"\sum f(x_i) &= " + f"{sum_y:.4f} \\\\\n")
+        f.write(r"\sum x_i f(x_i) &= " + f"{sum_xy:.4f} \n")
+        f.write(r"\end{align*}" + "\n")
+        
+        f.write(r"\subsection*{Resolução do Sistema}" + "\n")
+        f.write(r"\begin{align*}" + "\n")
+        f.write(r"a_2 &= " + f"{a2:.4f} \\\\\n")
+        f.write(r"a_1 &= " + f"{a1:.4f} \n")
+        f.write(r"\end{align*}" + "\n")
+        
+        residuals, sum_squared_residuals = calculate_residuals(points, (a1, a2), 1)
+        f.write(r"\subsection*{Cálculo dos Resíduos}" + "\n")
+        f.write(r"\begin{tabular}{|c|c|c|c|c|c|}\hline" + "\n")
+        f.write(r"i & $x_i$ & $f(x_i)$ & $\phi(x_i)$ & $r(x_i)$ & $r^2(x_i)$ \\\hline" + "\n")
+        for i, (x, y, y_adjusted, residual, residual_squared) in enumerate(residuals):
+            f.write(f"{i+1} & {x:.4f} & {y:.4f} & {y_adjusted:.4f} & {residual:.4f} & {residual_squared:.4f} \\\hline\n")
+        f.write(r"\end{tabular}" + "\n")
+        f.write(r"\subsection*{Soma dos Quadrados dos Resíduos}" + "\n")
+        f.write(r"\begin{equation*}" + "\n")
+        f.write(r"\sum r^2(x_i) = " + f"{sum_squared_residuals:.4f}" + "\n")
+        f.write(r"\end{equation*}" + "\n")
+        
+        f.write(r"\section*{Ajuste Quadrático}" + "\n")
+        a0, a1, a2 = quadratic_results
+        f.write(r"\subsection*{Cálculo dos Somatórios}" + "\n")
+        f.write(r"\begin{align*}" + "\n")
+        f.write(r"a_0 &= " + f"{a0:.4f} \\\\\n")
+        f.write(r"a_1 &= " + f"{a1:.4f} \\\\\n")
+        f.write(r"a_2 &= " + f"{a2:.4f} \n")
+        f.write(r"\end{align*}" + "\n")
+        
+        residuals, sum_squared_residuals = calculate_residuals(points, (a0, a1, a2), 2)
+        f.write(r"\subsection*{Cálculo dos Resíduos}" + "\n")
+        f.write(r"\begin{tabular}{|c|c|c|c|c|c|}\hline" + "\n")
+        f.write(r"i & $x_i$ & $f(x_i)$ & $\phi(x_i)$ & $r(x_i)$ & $r^2(x_i)$ \\\hline" + "\n")
+        for i, (x, y, y_adjusted, residual, residual_squared) in enumerate(residuals):
+            f.write(f"{i+1} & {x:.4f} & {y:.4f} & {y_adjusted:.4f} & {residual:.4f} & {residual_squared:.4f} \\\hline\n")
+        f.write(r"\end{tabular}" + "\n")
+        f.write(r"\subsection*{Soma dos Quadrados dos Resíduos}" + "\n")
+        f.write(r"\begin{equation*}" + "\n")
+        f.write(r"\sum r^2(x_i) = " + f"{sum_squared_residuals:.4f}" + "\n")
+        f.write(r"\end{equation*}" + "\n")
+        
+        f.write(r"\end{document}" + "\n")
 
 def main():
     """
@@ -130,10 +198,8 @@ def main():
         print("2. Visualizar os pontos atuais")
         print("3. Executar o ajuste linear pelo método dos mínimos quadrados")
         print("4. Executar o ajuste polinomial (quadrático) pelo método dos mínimos quadrados")
-        print("5. Exibir as funções ajustadas")
-        print("6. Calcular e exibir o valor ajustado para um valor específico de x")
-        print("7. Calcular e exibir a soma dos quadrados dos resíduos")
-        print("8. Sair do programa")
+        print("5. Gerar relatório em LaTeX")
+        print("6. Sair do programa")
         choice = input("Escolha uma opção: ")
         
         if choice == '1':
@@ -145,8 +211,20 @@ def main():
                 print("É necessário pelo menos dois pontos para realizar o ajuste linear.")
             else:
                 try:
-                    a1, a2 = linear_least_squares(points)
-                    print(f"Coeficientes da reta ajustada: a1 = {a1}, a2 = {a2}")
+                    a1, a2, sum_x, sum_x2, sum_y, sum_xy = linear_least_squares(points)
+                    residuals, sum_squared_residuals = calculate_residuals(points, (a1, a2), 1)
+                    print("\na) Cálculo dos somatórios:")
+                    print(f"Σxi = {sum_x:.4f}")
+                    print(f"Σxi^2 = {sum_x2:.4f}")
+                    print(f"Σf(xi) = {sum_y:.4f}")
+                    print(f"Σxi*f(xi) = {sum_xy:.4f}")
+                    print("\nb) Resolução do sistema:")
+                    print(f"a1 = {a1:.4f}")
+                    print(f"a2 = {a2:.4f}")
+                    print("\nc) Cálculo do quadrado dos resíduos:")
+                    for i, (x, y, y_adjusted, residual, residual_squared) in enumerate(residuals):
+                        print(f"Iteração {i+1}: x = {x:.4f}, f(x) = {y:.4f}, φ(x) = {y_adjusted:.4f}, r(x) = {residual:.4f}, r^2(x) = {residual_squared:.4f}")
+                    print(f"Soma dos quadrados dos resíduos: {sum_squared_residuals:.4f}")
                 except ValueError as e:
                     print(e)
         elif choice == '4':
@@ -155,48 +233,30 @@ def main():
             else:
                 try:
                     a0, a1, a2 = quadratic_least_squares(points)
-                    print(f"Coeficientes do polinômio ajustado: a0 = {a0}, a1 = {a1}, a2 = {a2}")
+                    residuals, sum_squared_residuals = calculate_residuals(points, (a0, a1, a2), 2)
+                    print("\na) Cálculo dos somatórios:")
+                    print(f"a0 = {a0:.4f}")
+                    print(f"a1 = {a1:.4f}")
+                    print(f"a2 = {a2:.4f}")
+                    print("\nb) Resolução do sistema:")
+                    print(f"a0 = {a0:.4f}")
+                    print(f"a1 = {a1:.4f}")
+                    print(f"a2 = {a2:.4f}")
+                    print("\nc) Cálculo do quadrado dos resíduos:")
+                    for i, (x, y, y_adjusted, residual, residual_squared) in enumerate(residuals):
+                        print(f"Iteração {i+1}: x = {x:.4f}, f(x) = {y:.4f}, φ(x) = {y_adjusted:.4f}, r(x) = {residual:.4f}, r^2(x) = {residual_squared:.4f}")
+                    print(f"Soma dos quadrados dos resíduos: {sum_squared_residuals:.4f}")
                 except ValueError as e:
                     print(e)
         elif choice == '5':
             if len(points) < 2:
-                print("É necessário realizar um ajuste primeiro.")
+                print("É necessário pelo menos dois pontos para gerar o relatório.")
             else:
-                if len(points) >= 2:
-                    a1, a2 = linear_least_squares(points)
-                    print(f"Função linear ajustada: y = {a1} + {a2}*x")
-                if len(points) >= 3:
-                    a0, a1, a2 = quadratic_least_squares(points)
-                    print(f"Função quadrática ajustada: y = {a0} + {a1}*x + {a2}*x^2")
+                linear_results = linear_least_squares(points)
+                quadratic_results = quadratic_least_squares(points)
+                generate_latex_report(points, linear_results, quadratic_results)
+                print("Relatório gerado em 'relatorio_minimos_quadrados.tex'.")
         elif choice == '6':
-            if len(points) < 2:
-                print("É necessário realizar um ajuste primeiro.")
-            else:
-                try:
-                    x = float(input("Digite o valor de x: "))
-                    if len(points) >= 2:
-                        a1, a2 = linear_least_squares(points)
-                        y_linear = calculate_adjusted_value((a1, a2), x, 1)
-                        print(f"O valor ajustado pela função linear em x = {x} é y = {y_linear}")
-                    if len(points) >= 3:
-                        a0, a1, a2 = quadratic_least_squares(points)
-                        y_quadratic = calculate_adjusted_value((a0, a1, a2), x, 2)
-                        print(f"O valor ajustado pela função quadrática em x = {x} é y = {y_quadratic}")
-                except ValueError as e:
-                    print(e)
-        elif choice == '7':
-            if len(points) < 2:
-                print("É necessário realizar um ajuste primeiro.")
-            else:
-                if len(points) >= 2:
-                    a1, a2 = linear_least_squares(points)
-                    rss_linear = calculate_residual_sum_of_squares(points, (a1, a2), 1)
-                    print(f"Soma dos quadrados dos resíduos (linear): {rss_linear}")
-                if len(points) >= 3:
-                    a0, a1, a2 = quadratic_least_squares(points)
-                    rss_quadratic = calculate_residual_sum_of_squares(points, (a0, a1, a2), 2)
-                    print(f"Soma dos quadrados dos resíduos (quadrático): {rss_quadratic}")
-        elif choice == '8':
             print("Saindo do programa.")
             break
         else:
